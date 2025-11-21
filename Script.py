@@ -142,7 +142,9 @@ sᴇɴᴅ ᴍᴇ ᴀɴʏ ᴍᴏᴠɪᴇ ᴏʀ sᴇʀɪᴇs ɴᴀᴍᴇ ᴀɴᴅ 
 ❗️ ʟᴀɴɢᴜᴀɢᴇ - {languages}</b>
 """
 
-    FILE_CAPTION = """<b>{file_name}\n\nUploaded By: <a href="https://t.me/Movieroll_M">Mσʋιҽɾσʅʅ</a></b>"""
+    FILE_CAPTION = """<b><a href='https://t.me/Movie_Provider_group'>{file_name}</a></b>
+
+⚜️ <b>ᴘᴏᴡᴇʀᴇᴅ ʙʏ:</b> <b><a href='https://t.me/Movie_Provider_group'>[ Movieroll ]</a></b>"""
 
     MOVIE_UPDATE_NOTIFY_TXT = """
 </b><a href={poster_url}>📥</a><a href={imdb_url}>New {tag} Added</a></b>
