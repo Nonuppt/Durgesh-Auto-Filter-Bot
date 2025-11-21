@@ -39,8 +39,8 @@ FILES_LIMIT = int(environ.get("FREE_FILES", "3")) #No. of File User Gets In Free
 
 # Database Settings
 
-DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://@cluster0.mongodb.net/?retryWrites=true&w=majority")
-FILES_DATABASE_URL = environ.get('FILES_DATABASE_URL', "mongodb+srv://@cluster0.mongodb.net/?retryWrites=true&w=majority") # For Files
+DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://sbmod88_db_user:XCLxrjdGlaHTG6mz@cluster0.qndjonz.mongodb.net/?autobot=Cluster0")
+FILES_DATABASE_URL = environ.get('FILES_DATABASE_URL', "mongodb+srv://gouravbolange_db_user:yos9d73FCsyLpiI6@cluster0.wxnzgc0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0") # For Files
 SECOND_FILES_DATABASE_URL = environ.get('SECOND_FILES_DATABASE_URL', "") # 2nd DB For Files
 DATABASE_NAME = environ.get('DATABASE_NAME', "Silicon")
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Silicon_Files')
@@ -54,33 +54,33 @@ TUTORIAL = environ.get("TUTORIAL", "https://t.me/Silicon_Bot_Update")
 TUTORIAL2 = environ.get("TUTORIAL2", "https://t.me/Silicon_Bot_Update")
 TUTORIAL3 = environ.get("TUTORIAL3", "https://t.me/Silicon_Bot_Update")
 VERIFY_IMG = environ.get("VERIFY_IMG", "https://graph.org/file/1669ab9af68eaa62c3ca4.jpg")
-SHORTENER_API = environ.get("SHORTENER_API", "5bb6e402dd86fb8774690a5f4a65d2a2c0c04877")
-SHORTENER_WEBSITE = environ.get("SHORTENER_WEBSITE", 'shortslink.in')
-SHORTENER_API2 = environ.get("SHORTENER_API2", "41a89e7a1f16e7dbec0ee52d743f3b5a38a09613")
-SHORTENER_WEBSITE2 = environ.get("SHORTENER_WEBSITE2", 'shortslink2.com')
-SHORTENER_API3 = environ.get("SHORTENER_API3", "f287e7e9b1a23c34f542f77787d39607cae36a4d")
-SHORTENER_WEBSITE3 = environ.get("SHORTENER_WEBSITE3", 'shortslink3.online')
+SHORTENER_API = environ.get("SHORTENER_API", "c7d26524bec5a47ef34454ed1348511f4124bda6")
+SHORTENER_WEBSITE = environ.get("SHORTENER_WEBSITE", 'shortxlinks.com')
+SHORTENER_API2 = environ.get("SHORTENER_API2", "c7d26524bec5a47ef34454ed1348511f4124bda6")
+SHORTENER_WEBSITE2 = environ.get("SHORTENER_WEBSITE2", 'shortxlinks2.com')
+SHORTENER_API3 = environ.get("SHORTENER_API3", "c7d26524bec5a47ef34454ed1348511f4124bda6")
+SHORTENER_WEBSITE3 = environ.get("SHORTENER_WEBSITE3", 'shortxlinks3.com')
 TWO_VERIFY_GAP = int(environ.get('TWO_VERIFY_GAP', "14400"))
 THREE_VERIFY_GAP = int(environ.get('THREE_VERIFY_GAP', "14400"))
 
 # Force Subscribe Settings 
 
-auth_req_channels = environ.get("AUTH_REQ_CHANNELS", "-100")# requst to join Channel for force sub (make sure bot is admin) only for bot ADMINS  
-auth_channels = environ.get("AUTH_CHANNELS", "-100")# Channels for force sub (make sure bot is admin)
+auth_req_channels = environ.get("AUTH_REQ_CHANNELS", "-1003491147826")# requst to join Channel for force sub (make sure bot is admin) only for bot ADMINS  
+auth_channels = environ.get("AUTH_CHANNELS", "-1003016878831 100301687883 -1003096722799")# Channels for force sub (make sure bot is admin)
 AUTH_REQ_CHANNELS = [int(ch) for ch in auth_req_channels.split() if ch and id_pattern.match(ch)] 
 AUTH_CHANNELS = [int(ch) for ch in auth_channels.split() if ch and id_pattern.match(ch)]
 
 # Channels
 
-SUPPORT_GROUP = int(environ.get('SUPPORT_GROUP', '-1001816697837'))
-request_channel = environ.get('REQUEST_CHANNEL', '-1002470027489')
+SUPPORT_GROUP = int(environ.get('SUPPORT_GROUP', '-1002669266714'))
+request_channel = environ.get('REQUEST_CHANNEL', '-1003491147826')
 REQUEST_CHANNEL = int(request_channel) if request_channel and id_pattern.search(request_channel) else None
 
 # Movie Update Notification Settings/ Auto Index Settings
 
 MOVIE_UPDATE_NOTIFICATION = bool(environ.get('MOVIE_UPDATE_NOTIFICATION', False))  # Notification On (True) / Off (False)
 MOVIE_UPDATE_CHANNEL = int(environ.get('MOVIE_UPDATE_CHANNEL', ''))  # Notification of sent to your channel
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '').split()] # Auto Index Channel
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002796911670').split()] # Auto Index Channel
 DELETE_CHANNELS = int(environ.get('DELETE_CHANNELS','')) # Channel to delete file from DB
 IMAGE_FETCH = bool(environ.get('IMAGE_FETCH', True))  # On (True) / Off (False)
 LINK_PREVIEW = bool(environ.get('LINK_PREVIEW', False)) # Shows link preview in notification msg instead of image
