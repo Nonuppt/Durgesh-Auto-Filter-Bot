@@ -93,7 +93,7 @@ LANDSCAPE_POSTER = bool(environ.get('LANDSCAPE_POSTER', True)) # Shows landscape
 
 AUTO_FILTER = is_enabled('AUTO_FILTER', True)
 FILE_AUTO_DEL_TIMER = int(environ.get('FILE_AUTO_DEL_TIMER', '600'))
-PORT = os.environ.get('PORT', '5000')
+PORT = int(os.environ.get('PORT', '5000'))
 MAX_BTN = int(environ.get('MAX_BTN', '8'))
 AUTO_DELETE = is_enabled('AUTO_DELETE', True)
 DELETE_TIME = int(environ.get('DELETE_TIME', 300))
