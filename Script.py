@@ -144,7 +144,7 @@ sᴇɴᴅ ᴍᴇ ᴀɴʏ ᴍᴏᴠɪᴇ ᴏʀ sᴇʀɪᴇs ɴᴀᴍᴇ ᴀɴᴅ 
 
     FILE_CAPTION = """<b><a href='https://t.me/Movie_Provider_group'>{file_name}</a></b>
 
-⚜️ <b>ᴘᴏᴡᴇʀᴇᴅ ʙʏ:</b> <b><a href='https://t.me/Movie_Provider_group'>[ Movieroll ]</a></b>"""
+⚜️ <b>ᴘᴏᴡᴇʀᴇᴅ ʙʏ:</b> <b><a href='https://t.me/Movieroll_M'>[ Mσʋιҽɾσʅʅ σϝϝιƈιαʅ ]</a></b>"""
 
     MOVIE_UPDATE_NOTIFY_TXT = """
 </b><a href={poster_url}>📥</a><a href={imdb_url}>New {tag} Added</a></b>
