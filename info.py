@@ -23,7 +23,7 @@ API_HASH = environ.get('API_HASH', 'b081ec8da8cf5263a6593041c1ae2a3b')
 BOT_TOKEN = environ.get('BOT_TOKEN', '8382484520:AAHHy5CMDLJAq9SQiUYQFuBbYuEIM8n4H1U')
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '6222491731').split()]
 USERNAME = environ.get('USERNAME', "https://telegram.me/Movieroll_M")
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003202129936'))
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003281818923'))
 MOVIE_GROUP_LINK = environ.get('MOVIE_GROUP_LINK', 'https://t.me/Movie_Provider_2')
 
 # Pics 
@@ -115,7 +115,7 @@ SEASONS = [("sᴇᴀsᴏɴ 𝟷", "s01"), ("sᴇᴀsᴏɴ 𝟸", "s02"), ("sᴇ�
 # Stream Settings 
 
 IS_PREMIUM_STREAM = is_enabled('IS_PREMIUM_STREAM', False) # True To Allow Stream For Premium User Only
-BIN_CHANNEL = environ.get("BIN_CHANNEL", "") # Channel Where Files sent For stream
+BIN_CHANNEL = environ.get("BIN_CHANNEL", "-1003224139958") # Channel Where Files sent For stream
 if len(BIN_CHANNEL) == 0:
     print('Error BIN_CHANNEL is missing, exiting now')
     exit()
