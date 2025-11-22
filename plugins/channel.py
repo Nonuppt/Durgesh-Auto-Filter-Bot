@@ -257,10 +257,8 @@ async def _process_with_lock(bot, filename, caption, media_info, base_name, proc
         else:
             details = await get_movie_details(base_name) or {}
 
-        raw_genres = details.get("genres", "N/A")
-        if isinstance(raw_genres, str):
-            genre_list = [g.strip() for g in raw_genres.split(",")]
-            genres = ", ".join(g for g in genre_list if g in STANDARD_GENRES) or "N/A"
+       raw_genres = details.get("genres") or []
+genres = ", ".join(raw_genres) if isinstance(raw_genres, list) else raw_genres or "N/A"
         else:
             genres = ", ".join(g for g in raw_genres if g in STANDARD_GENRES) or "N/A"
         movie_doc = {
@@ -419,15 +417,26 @@ def generate_movie_message(movie_doc, base_name):
     all_tags = set()
     episodes_by_season = defaultdict(set)
 
-    for file in movie_doc["files"]:
-        if file["quality"] != "N/A":
-            all_qualities.update(q.strip() for q in file["quality"].split(",") if q.strip())
-        if file["language"] != "N/A":
-            all_languages.update(l.strip() for l in file["language"].split(",") if l.strip())
-        if file["ott_platform"] != "N/A":
-            platforms = [p.strip() for p in file["ott_platform"].split("|") if p.strip()]
+for file in movie_doc["files"]:
+        # qualities (same as before)
+        if file.get("quality") and file["quality"] != "N/A":
+            all_qualities.update(q.strip() for q in str(file["quality"]).split(",") if q.strip())
+
+        # languages: support string like "Hindi, English", list like ["Hindi","English"], or single value
+        raw_lang = file.get("language", "")
+        if raw_lang and raw_lang != "N/A":
+            if isinstance(raw_lang, list):
+                all_languages.update(l.strip() for l in raw_lang if isinstance(l, str) and l.strip())
+            else:
+                # make sure it's str then split by comma
+                all_languages.update(l.strip() for l in str(raw_lang).split(",") if l.strip())
+
+        # ott/platforms
+        if file.get("ott_platform") and file["ott_platform"] != "N/A":
+            platforms = [p.strip() for p in str(file["ott_platform"]).split("|") if p.strip()]
             all_ott_platforms.update(platforms)
-        if file["tag"]:
+
+        if file.get("tag"):
             all_tags.add(file["tag"])
         if file.get("season") and file.get("episode"):
             season = file["season"]
@@ -490,3 +499,4 @@ def generate_movie_message(movie_doc, base_name):
         rating=movie_doc.get("rating", "N/A"),
         search_link=temp.B_LINK
     )
+
