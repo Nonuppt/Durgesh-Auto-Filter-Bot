@@ -247,27 +247,43 @@ async def _process_with_lock(bot, filename, caption, media_info, base_name, proc
         "season": media_info["season"],
         "episode": media_info["episode"]
     }
-    if not movie_doc:
-        if TMDB_POSTER:
+    if TMDB_POSTER:
             details = await get_movie_detailsx(base_name)
             if details.get("error"):
-                error_tmdb=True
+                error_tmdb = True
                 logger.info("TMDB error switching to IMDB")
                 details = await get_movie_details(base_name) or {}
         else:
             details = await get_movie_details(base_name) or {}
 
-       raw_genres = details.get("genres") or []
-genres = ", ".join(raw_genres) if isinstance(raw_genres, list) else raw_genres or "N/A"
+        # ----- Safe genres parsing -----
+        raw_genres = details.get("genres") or []
+        genres = "N/A"
+        if isinstance(raw_genres, list):
+            # list can be list of dicts or list of names
+            if raw_genres and isinstance(raw_genres[0], dict):
+                names = [g.get("name") or g.get("title") for g in raw_genres]
+                names = [n.strip() for n in names if n]
+                genres = ", ".join(names) if names else "N/A"
+            else:
+                # list of strings
+                names = [str(g).strip() for g in raw_genres if str(g).strip()]
+                genres = ", ".join(names) if names else "N/A"
+        elif isinstance(raw_genres, dict):
+            genres = raw_genres.get("name") or raw_genres.get("title") or "N/A"
+        elif isinstance(raw_genres, str):
+            names = [g.strip() for g in raw_genres.split(",") if g.strip()]
+            genres = ", ".join(names) if names else "N/A"
         else:
-            genres = ", ".join(g for g in raw_genres if g in STANDARD_GENRES) or "N/A"
+            genres = "N/A"
+
         movie_doc = {
             "_id": base_name,
             "files": [file_data],
             "poster_url": details.get("backdrop_url") if LANDSCAPE_POSTER and TMDB_POSTER and not error_tmdb else details.get("poster_url"),
             "genres": genres,
             "rating": details.get("rating", "N/A"),
-            "imdb_url": details.get("url", "")if not TMDB_POSTER else details.get("tmdb_url"),
+            "imdb_url": details.get("url", "") if not TMDB_POSTER else details.get("tmdb_url"),
             "year": media_info["year"] or details.get("year"),
             "tag": media_info["tag"],
             "ott_platform": media_info["ott_platform"],
@@ -289,7 +305,7 @@ genres = ", ".join(raw_genres) if isinstance(raw_genres, list) else raw_genres o
                 )
                 movie_doc["files"].append(file_data)
                 schedule_update(bot, base_name)
-    else:
+            else:
         if any(f["filename"] == filename for f in movie_doc["files"]):
             return
         await db.movie_updates.update_one(
@@ -499,4 +515,5 @@ for file in movie_doc["files"]:
         rating=movie_doc.get("rating", "N/A"),
         search_link=temp.B_LINK
     )
+
 
