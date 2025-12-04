@@ -39,7 +39,7 @@ FILES_LIMIT = int(environ.get("FREE_FILES", "3")) #No. of File User Gets In Free
 
 # Database Settings
 
-DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://sbmod88_db_user:XCLxrjdGlaHTG6mz@cluster0.qndjonz.mongodb.net/?autobot=Cluster0")
+DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://sbmod88_db_user:XCLxrjdGlaHTG6mz@cluster0.qndjonz.mongodb.net/?appName=Cluster0")
 FILES_DATABASE_URL = environ.get('FILES_DATABASE_URL', "mongodb+srv://gouravbolange_db_user:yos9d73FCsyLpiI6@cluster0.wxnzgc0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0") # For Files
 SECOND_FILES_DATABASE_URL = environ.get('SECOND_FILES_DATABASE_URL', "") # 2nd DB For Files
 DATABASE_NAME = environ.get('DATABASE_NAME', "Silicon")
