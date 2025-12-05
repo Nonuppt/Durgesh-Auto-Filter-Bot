@@ -20,18 +20,18 @@ logger = logging.getLogger(__name__)
 # Precomputed sets for faster lookups
 IGNORE_WORDS = {
     "rarbg", "dub", "sub", "sample", "mkv", "aac", "combined",
-    "action", "adventure", "animation", "biography", "comedy", "crime", 
-    "documentary", "drama", "family", "fantasy", "film-noir", "history", 
-    "horror", "music", "musical", "mystery", "romance", "sci-fi", "sport", 
-    "thriller", "war", "western", "hdcam", "hdtc", "camrip", "ts", "tc", 
-    "telesync", "dvdscr", "dvdrip", "predvd", "webrip", "web-dl", "tvrip", 
-    "hdtv", "web dl", "webdl", "bluray", "brrip", "bdrip", "360p", "480p", 
-    "720p", "1080p", "2160p", "4k", "1440p", "540p", "240p", "140p", "hevc", 
-    "hdrip", "hin", "hindi", "tam", "tamil", "kan", "kannada", "tel", "telugu", 
-    "mal", "malayalam", "eng", "english", "pun", "punjabi", "ben", "bengali", 
-    "mar", "marathi", "guj", "gujarati", "urd", "urdu", "kor", "korean", "jpn", 
-    "japanese", "nf", "netflix", "sonyliv", "sony", "sliv", "amzn", "prime", 
-    "primevideo", "hotstar", "zee5", "jio", "jhs", "aha", "hbo", "paramount", 
+    "action", "adventure", "animation", "biography", "comedy", "crime",
+    "documentary", "drama", "family", "fantasy", "film-noir", "history",
+    "horror", "music", "musical", "mystery", "romance", "sci-fi", "sport",
+    "thriller", "war", "western", "hdcam", "hdtc", "camrip", "ts", "tc",
+    "telesync", "dvdscr", "dvdrip", "predvd", "webrip", "web-dl", "tvrip",
+    "hdtv", "web dl", "webdl", "bluray", "brrip", "bdrip", "360p", "480p",
+    "720p", "1080p", "2160p", "4k", "1440p", "540p", "240p", "140p", "hevc",
+    "hdrip", "hin", "hindi", "tam", "tamil", "kan", "kannada", "tel", "telugu",
+    "mal", "malayalam", "eng", "english", "pun", "punjabi", "ben", "bengali",
+    "mar", "marathi", "guj", "gujarati", "urd", "urdu", "kor", "korean", "jpn",
+    "japanese", "nf", "netflix", "sonyliv", "sony", "sliv", "amzn", "prime",
+    "primevideo", "hotstar", "zee5", "jio", "jhs", "aha", "hbo", "paramount",
     "apple", "hoichoi", "sunnxt", "viki", "PrivateMovieZ", "toonworld4all", "themoviesboss", "1tamilmv", "tamilblasters",
     "1tamilblasters", "skymovieshd", "extraflix", "hdm2", "moviesmod", "hdhub4u", "mkvcinemas", "primefix", "join", "www", "villa", "tg", "original"
 }
@@ -75,7 +75,7 @@ NORMALIZE_PATTERN = re.compile(r"[._]+|[()\[\]{}:;'–!,.?_]")
 QUALITY_PATTERN = re.compile(
     r"\b(?:HDCam|HDTC|CamRip|TS|TC|TeleSync|DVDScr|DVDRip|PreDVD|"
     r"WEBRip|WEB-DL|TVRip|HDTV|WEB DL|WebDl|BluRay|BRRip|BDRip|"
-    r"360p|480p|720p|1080p|2160p|4K|1440p|540p|240p|140p|HEVC|HDRip)\b", 
+    r"360p|480p|720p|1080p|2160p|4K|1440p|540p|240p|140p|HEVC|HDRip)\b",
     re.IGNORECASE
 )
 YEAR_PATTERN = re.compile(r"(?<![A-Za-z0-9])(?:19|20)\d{2}(?![A-Za-z0-9])")
@@ -147,7 +147,7 @@ def schedule_update(bot, base_name, delay=5):
     if handle := pending_updates.get(base_name):
         if not handle.cancelled():
             handle.cancel()
-    
+
     loop = asyncio.get_event_loop()
     pending_updates[base_name] = loop.call_later(
         delay,
@@ -273,7 +273,7 @@ async def _process_with_lock(bot, filename, caption, media_info, base_name, proc
             "year": media_info["year"] or details.get("year"),
             "tag": media_info["tag"],
             "ott_platform": media_info["ott_platform"],
-            "message_id": None,
+            "message_ids": {},
             "is_photo": False
         }
         try:
@@ -318,33 +318,41 @@ async def send_movie_update(bot, base_name):
                 )
             ]])
 
-            if movie_doc.get("poster_url") and not LINK_PREVIEW:
-                resized_poster = await fetch_image(movie_doc["poster_url"], size=(2560, 1440) if LANDSCAPE_POSTER and TMDB_POSTER and not error_tmdb else (853, 1280))
-                msg = await bot.send_photo(
-                    chat_id=MOVIE_UPDATE_CHANNEL,
-                    photo=resized_poster,
-                    caption=text,
-                    reply_markup=buttons,
-                    parse_mode=enums.ParseMode.HTML
-                )
-                is_photo = True
-            else:
-                send_params = {
-                    "chat_id": MOVIE_UPDATE_CHANNEL,
-                    "text": text,
-                    "reply_markup": buttons,
-                    "parse_mode": enums.ParseMode.HTML
-                }
-                if movie_doc.get("poster_url") and LINK_PREVIEW:
-                    send_params["invert_media"] = ABOVE_PREVIEW
-                msg = await bot.send_message(**send_params)
-                is_photo = False
+            message_ids = {}
+            is_photo = False
+            for channel_id in MOVIE_UPDATE_CHANNEL:
+                try:
+                    if movie_doc.get("poster_url") and not LINK_PREVIEW:
+                        resized_poster = await fetch_image(movie_doc["poster_url"], size=(2560, 1440) if LANDSCAPE_POSTER and TMDB_POSTER and not error_tmdb else (853, 1280))
+                        msg = await bot.send_photo(
+                            chat_id=channel_id,
+                            photo=resized_poster,
+                            caption=text,
+                            reply_markup=buttons,
+                            parse_mode=enums.ParseMode.HTML
+                        )
+                        is_photo = True
+                    else:
+                        send_params = {
+                            "chat_id": channel_id,
+                            "text": text,
+                            "reply_markup": buttons,
+                            "parse_mode": enums.ParseMode.HTML
+                        }
+                        if movie_doc.get("poster_url") and LINK_PREVIEW:
+                            send_params["invert_media"] = ABOVE_PREVIEW
+                        msg = await bot.send_message(**send_params)
+                        is_photo = False
+                    message_ids[str(channel_id)] = msg.id
+                except Exception as e:
+                    logger.error(f"Failed to send movie update to channel {channel_id}: {e}")
 
-            await db.movie_updates.update_one(
-                {"_id": base_name},
-                {"$set": {"message_id": msg.id, "is_photo": is_photo}}
-            )
-            return msg
+            if message_ids:
+                await db.movie_updates.update_one(
+                    {"_id": base_name},
+                    {"$set": {"message_ids": message_ids, "is_photo": is_photo}}
+                )
+                return True
         except FloodWait as e:
             wait_time = e.value + 2
             await asyncio.sleep(wait_time)
@@ -367,48 +375,48 @@ async def update_movie_message(bot, base_name):
             )
         ]])
 
-        message_id = movie_doc.get("message_id")
+        message_ids = movie_doc.get("message_ids", {})
         is_photo = movie_doc.get("is_photo", False)
 
-        if not message_id:
+        if not message_ids:
             await send_movie_update(bot, base_name)
             return
 
-        try:
-            if is_photo:
-                await bot.edit_message_caption(
-                    chat_id=MOVIE_UPDATE_CHANNEL,
-                    message_id=message_id,
-                    caption=text,
-                    reply_markup=buttons,
-                    parse_mode=enums.ParseMode.HTML
-                )
-            else:
-                await bot.edit_message_text(
-                    chat_id=MOVIE_UPDATE_CHANNEL,
-                    message_id=message_id,
-                    text=text,
-                    reply_markup=buttons,
-                    parse_mode=enums.ParseMode.HTML,
-                    invert_media=ABOVE_PREVIEW,
-                    disable_web_page_preview=not LINK_PREVIEW
-                )
-            return
-        except (MessageIdInvalid, MessageNotModified):
-            pass
-        except Exception:
+        for channel_id, message_id in message_ids.items():
             try:
-                await bot.delete_messages(
-                    chat_id=MOVIE_UPDATE_CHANNEL,
-                    message_ids=message_id
-                )
-                await db.movie_updates.update_one(
-                    {"_id": base_name},
-                    {"$set": {"message_id": None, "is_photo": False}}
-                )
-            except Exception:
+                if is_photo:
+                    await bot.edit_message_caption(
+                        chat_id=int(channel_id),
+                        message_id=message_id,
+                        caption=text,
+                        reply_markup=buttons,
+                        parse_mode=enums.ParseMode.HTML
+                    )
+                else:
+                    await bot.edit_message_text(
+                        chat_id=int(channel_id),
+                        message_id=message_id,
+                        text=text,
+                        reply_markup=buttons,
+                        parse_mode=enums.ParseMode.HTML,
+                        invert_media=ABOVE_PREVIEW,
+                        disable_web_page_preview=not LINK_PREVIEW
+                    )
+            except (MessageIdInvalid, MessageNotModified):
                 pass
-            await send_movie_update(bot, base_name)
+            except Exception as e:
+                logger.error(f"Failed to update message in channel {channel_id}: {e}")
+                try:
+                    await bot.delete_messages(
+                        chat_id=int(channel_id),
+                        message_ids=message_id
+                    )
+                    await db.movie_updates.update_one(
+                        {"_id": base_name},
+                        {"$unset": {f"message_ids.{channel_id}": ""}}
+                    )
+                except Exception as e_del:
+                    logger.error(f"Failed to delete message in channel {channel_id}: {e_del}")
     except Exception as e:
         logger.error(f"Failed to update movie message: {e}")
 
