@@ -79,7 +79,7 @@ REQUEST_CHANNEL = int(request_channel) if request_channel and id_pattern.search(
 # Movie Update Notification Settings/ Auto Index Settings
 
 MOVIE_UPDATE_NOTIFICATION = bool(environ.get('MOVIE_UPDATE_NOTIFICATION', True))  # Notification On (True) / Off (False)
-MOVIE_UPDATE_CHANNEL = [int(ch) for ch in environ.get('MOVIE_UPDATE_CHANNEL', '-1002481569627 -1002414133579').split()] # Notification of sent to your channel
+MOVIE_UPDATE_CHANNEL = [int(ch) for ch in environ.get('MOVIE_UPDATE_CHANNEL', '-1002414133579 -1002481569627').split()] # Notification of sent to your channel
 CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002837138676').split()] # Auto Index Channe
 DELETE_CHANNELS = int(environ.get('DELETE_CHANNELS', '0') or 0)  # Channel to delete file from DB
 IMAGE_FETCH = bool(environ.get('IMAGE_FETCH', True))  # On (True) / Off (False)
