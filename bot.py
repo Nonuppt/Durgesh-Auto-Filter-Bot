@@ -53,6 +53,7 @@ class Bot(Client):
         bind_address = "0.0.0.0"
         await web.TCPSite(app, bind_address, PORT).start()
         await self.send_message(chat_id=LOG_CHANNEL, text=f"<b>{me.mention} ʀᴇsᴛᴀʀᴛᴇᴅ 🤖\n\n📆 ᴅᴀᴛᴇ - <code>{today}</code>\n🕙 ᴛɪᴍᴇ - <code>{timee}</code>\n🌍 ᴛɪᴍᴇ ᴢᴏɴᴇ - <code>Asia/Kolkata</code></b>")
+        await self.migrate_db()
         tt = time.time() - st
         seconds = int(datetime.timedelta(seconds=tt).seconds)
         for admin in ADMINS:
@@ -61,6 +62,37 @@ class Bot(Client):
     async def stop(self, *args):
         await super().stop()
         print("Bot stopped.")
+
+    async def migrate_db(self):
+        # Migrate database schema for movie updates
+        if not hasattr(db, 'movie_updates'):
+            db.movie_updates = db.db.movie_updates
+
+        # Find documents that still use the old schema
+        cursor = db.movie_updates.find({"message_id": {"$exists": True}})
+        async for doc in cursor:
+            message_id = doc.get("message_id")
+            is_photo = doc.get("is_photo", False)
+
+            # Assuming the first channel in the list is the original one
+            if MOVIE_UPDATE_CHANNEL:
+                channel_id = MOVIE_UPDATE_CHANNEL[0]
+
+                # Create the new channel_messages structure
+                channel_messages = [{
+                    "channel_id": channel_id,
+                    "message_id": message_id,
+                    "is_photo": is_photo
+                }]
+
+                # Update the document with the new schema and remove the old fields
+                await db.movie_updates.update_one(
+                    {"_id": doc["_id"]},
+                    {
+                        "$set": {"channel_messages": channel_messages},
+                        "$unset": {"message_id": "", "is_photo": ""}
+                    }
+                )
     
     async def iter_messages(
         self,
