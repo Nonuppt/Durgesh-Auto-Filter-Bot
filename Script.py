@@ -142,7 +142,7 @@ sᴇɴᴅ ᴍᴇ ᴀɴʏ ᴍᴏᴠɪᴇ ᴏʀ sᴇʀɪᴇs ɴᴀᴍᴇ ᴀɴᴅ 
 ❗️ ʟᴀɴɢᴜᴀɢᴇ - {languages}</b>
 """
 
-    FILE_CAPTION = """<b><a href='https://t.me/+0AGqflc6nBUxYjdl'>{file_name}</a></b>
+    FILE_CAPTION = """<b><a href='http://t.me/Pixell_Pulse'>{file_name}</a></b>
 
 ⚜️ <b>ᴘᴏᴡᴇʀᴇᴅ ʙʏ:</b> <b><a href='https://t.me/Durgesh_9ty'>[ Durgesh 9t ]</a></b>"""
 
