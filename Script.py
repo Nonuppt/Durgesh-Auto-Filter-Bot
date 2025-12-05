@@ -63,7 +63,7 @@ sᴇɴᴅ ᴍᴇ ᴀɴʏ ᴍᴏᴠɪᴇ ᴏʀ sᴇʀɪᴇs ɴᴀᴍᴇ ᴀɴᴅ 
 📚 ʟɪʙʀᴀʀʏ: <a href="https://github.com/Mayuri-Chan/pyrofork">ᴘʏʀᴏꜰᴏʀᴋ</a>
 👨‍💻 ᴏᴡɴᴇʀ : <a href="https://telegram.me/Movieroll_M">Mσʋιҽɾσʅʅ σϝϝιƈιαʅ</a>
 🔧 ʙᴜɪʟᴅ sᴛᴀᴛᴜs : ᴠ𝟷.𝟶.𝟷
-💥 ʀᴇᴘᴏ : <a href="https://stupid-copper-vp5ukzleyb.edgeone.app/middle-finger-symbol-you-vector-13266689.jpg">ᴄʟɪᴄᴋ ʜᴇʀᴇ</a>
+💥 ʀᴇᴘᴏ : <a href="https://ibb.co/G4kKm4ys">ᴄʟɪᴄᴋ ʜᴇʀᴇ</a>
 </b></blockquote>"""
 
     SUPPORT_GRP_MOVIE_TEXT = '''<b>ʜᴇʏ {}
