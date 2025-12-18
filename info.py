@@ -20,7 +20,7 @@ def is_valid_ip(ip):
 
 API_ID = int(environ.get('API_ID', '21006440'))
 API_HASH = environ.get('API_HASH', 'f3b3fae13d20ab4b5f34ac3475749c20')
-BOT_TOKEN = environ.get('BOT_TOKEN', '8503469545:AAEbRC2IDVGhA3dYeG4fMRLtMamv3AZTnzI')
+BOT_TOKEN = environ.get('BOT_TOKEN', '')
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '6277856017').split()]
 USERNAME = environ.get('USERNAME', "https://telegram.me/Pixell_Pulse")
 LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1002714001584'))
