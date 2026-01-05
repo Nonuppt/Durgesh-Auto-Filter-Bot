@@ -1,0 +1,10 @@
+# Session files
+*.session
+
+# Python cache
+__pycache__/
+
+# Log files
+*.log
+*.txt
+!requirements.txt
