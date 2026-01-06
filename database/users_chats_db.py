@@ -419,6 +419,15 @@ class Database:
 
     async def update_movie_update_status(self, bot_id, enable):
         await self.update_bot_setting(bot_id, 'MOVIE_UPDATE_NOTIFICATION', enable)
+
+    async def add_redeem_code(self, code, time):
+        await self.codes.insert_one({"_id": code, "time": time})
+
+    async def get_redeem_code(self, code):
+        return await self.codes.find_one({"_id": code})
+
+    async def delete_redeem_code(self, code):
+        await self.codes.delete_one({"_id": code})
      
 db = Database(DATABASE_URI, DATABASE_NAME)    
 db2 = Database(DATABASE_URI2, DATABASE_NAME)

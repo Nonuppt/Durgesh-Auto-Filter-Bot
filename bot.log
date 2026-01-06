@@ -1,0 +1,34 @@
+/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pymongo/uri_parser_shared.py:328: UserWarning: Unknown option: autobot. Did you mean one of (authsource, srvmaxhosts, maxpoolsize) or maybe a camelCase version of one? Refer to docstring.
+  return get_validated_options(opts, warn)
+/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pymongo/uri_parser_shared.py:328: UserWarning: Unknown option: autobot. Did you mean one of (authsource, srvmaxhosts, maxpoolsize) or maybe a camelCase version of one? Refer to docstring.
+  return get_validated_options(opts, warn)
+
+
+Initalizing DreamxBotz
+Traceback (most recent call last):
+  File "/app/bot.py", line 94, in <module>
+    loop.run_until_complete(dreamxbotz_start())
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/app/bot.py", line 42, in dreamxbotz_start
+    await dreamxbotz.start()
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/methods/utilities/start.py", line 63, in start
+    await self.authorize()
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/client.py", line 402, in authorize
+    return await self.sign_in_bot(self.bot_token)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/methods/auth/sign_in_bot.py", line 52, in sign_in_bot
+    r = await self.invoke(
+        ^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/methods/advanced/invoke.py", line 80, in invoke
+    r = await self.session.invoke(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/session/session.py", line 420, in invoke
+    return await self.send(query, timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/session/session.py", line 377, in send
+    RPCError.raise_it(result, type(data))
+  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/pyrogram/errors/rpc_error.py", line 93, in raise_it
+    raise getattr(
+pyrogram.errors.exceptions.bad_request_400.ApiIdInvalid: Telegram says: [400 API_ID_INVALID] (caused by "auth.ImportBotAuthorization") Pyrogram 2.3.45 thinks: The api_id/api_hash combination is invalid
