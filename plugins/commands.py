@@ -354,10 +354,18 @@ async def start(client, message):
                 )
                 filesarr.append(msg)
             k = await client.send_message(chat_id=message.from_user.id, text=script.DEL_MSG.format(get_time(DELETE_TIME)), parse_mode=enums.ParseMode.HTML)
-            await asyncio.sleep(DELETE_TIME)
-            for x in filesarr:
-                await x.delete()
-            await k.edit_text("<b>ʏᴏᴜʀ ᴀʟʟ ᴠɪᴅᴇᴏꜱ/ꜰɪʟᴇꜱ ᴀʀᴇ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ !\nᴋɪɴᴅʟʏ ꜱᴇᴀʀᴄʜ ᴀɢᴀɪɴ</b>")
+            async def delete_all_files():
+                await asyncio.sleep(DELETE_TIME)
+                for x in filesarr:
+                    try:
+                        await x.delete()
+                    except Exception:
+                        pass
+                try:
+                    await k.edit_text("<b>ʏᴏᴜʀ ᴀʟʟ ᴠɪᴅᴇᴏꜱ/ꜰɪʟᴇꜱ ᴀʀᴇ ᴅᴇʟᴇᴛᴇᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ !\nᴋɪɴᴅʟʏ ꜱᴇᴀʀᴄʜ ᴀɢᴀɪɴ</b>")
+                except Exception:
+                    pass
+            asyncio.create_task(delete_all_files())
             return
         except Exception as e:
             logger.exception(e)
@@ -394,9 +402,14 @@ async def start(client, message):
             k = await msg.reply(script.DEL_MSG.format(get_time(DELETE_TIME)),
                 quote=True, parse_mode=enums.ParseMode.HTML
             )
-            await asyncio.sleep(DELETE_TIME)
-            await msg.delete()
-            await k.edit_text("<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</b>")
+            async def delete_message():
+                await asyncio.sleep(DELETE_TIME)
+                try:
+                    await msg.delete()
+                    await k.edit_text("<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</b>")
+                except Exception:
+                    pass
+            asyncio.create_task(delete_message())
             return
         except Exception as e:
             logger.exception(e)
@@ -428,10 +441,15 @@ async def start(client, message):
     )
     k = await msg.reply(script.DEL_MSG.format(get_time(DELETE_TIME)),
         quote=True, parse_mode=enums.ParseMode.HTML
-    )     
-    await asyncio.sleep(DELETE_TIME)
-    await msg.delete()
-    await k.edit_text("<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</b>")
+    )
+    async def delete_message():
+        await asyncio.sleep(DELETE_TIME)
+        try:
+            await msg.delete()
+            await k.edit_text("<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!</b>")
+        except Exception:
+            pass
+    asyncio.create_task(delete_message())
     return
 
 async def stream_buttons(user_id: int, file_id: str):
