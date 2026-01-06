@@ -54,6 +54,9 @@ async def start(client, message):
         current_time = datetime.now(tz=ist_timezone)
         result = await db.update_notcopy_user(user_id, {key:current_time})
         await db.update_verify_id_info(user_id, verify_id, {"verified":True})
+        success_message = await message.reply_text('<b>Aap safaltapoorvak verify ho gaye hain.</b>', quote=True, disable_web_page_preview=True)
+        await asyncio.sleep(7)
+        await success_message.delete()
         if key == "third_time_verified": 
             num = 3 
         else: 
