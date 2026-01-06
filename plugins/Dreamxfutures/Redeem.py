@@ -9,8 +9,6 @@ from database.users_chats_db import db
 from info import ADMINS, PREMIUM_LOGS
 from utils import get_seconds, temp
 
-REDEEM_CODE = {}
-
 def generate_code(length=10):
     letters_and_digits = string.ascii_letters + string.digits
     return ''.join(random.choice(letters_and_digits) for _ in range(length))
@@ -29,7 +27,7 @@ async def add_redeem_code(client, message):
         codes = []
         for _ in range(num_codes):
             code = generate_code()
-            REDEEM_CODE[code] = time
+            await db.add_redeem_code(code, time)
             codes.append(code)
 
         codes_text = '\n'.join(f"➔ <code>/redeem {code}</code>" for code in codes)
@@ -59,11 +57,13 @@ async def add_redeem_code(client, message):
 async def redeem_code(client, message):
     user_id = message.from_user.id
     if len(message.command) == 2:
-        redeem_code = message.command[1]
+        redeem_code_str = message.command[1]
+        redeem_code = await db.get_redeem_code(redeem_code_str)
 
-        if redeem_code in REDEEM_CODE:
+        if redeem_code:
             try:
-                time = REDEEM_CODE.pop(redeem_code)
+                time = redeem_code["time"]
+                await db.delete_redeem_code(redeem_code_str)
                 user = await client.get_users(user_id)
                 try:
                     seconds = await get_seconds(time)
