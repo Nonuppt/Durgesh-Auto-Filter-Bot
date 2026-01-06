@@ -23,7 +23,10 @@ async def favicon_route_handler(request):
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
-    return web.json_response("dreamxbotz")
+    return web.json_response(
+        {"status": "OK"},
+        status=200
+    )
 
 @routes.get(r"/watch/{path:\S+}", allow_head=True)
 async def stream_handler(request: web.Request):
