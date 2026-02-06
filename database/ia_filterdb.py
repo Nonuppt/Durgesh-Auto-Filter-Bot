@@ -139,17 +139,46 @@ async def save_file(media):
     return True, 1
 
 def sort_files(files):
+    def get_quality_rank(filename):
+        filename = filename.lower()
+        rank = 0
+        if '2160p' in filename or '4k' in filename:
+            if 'hevc' in filename or '10bit' in filename:
+                rank = 7
+            else:
+                rank = 8
+        elif '1080p' in filename:
+            if 'hevc' in filename or '10bit' in filename:
+                rank = 4
+            else:
+                rank = 5
+        elif '720p' in filename:
+            if 'hevc' in filename or '10bit' in filename:
+                rank = 2
+            else:
+                rank = 3
+        elif '480p' in filename:
+            rank = 1
+        return rank
+
     def sort_key(file):
         file_name = file.file_name
-        # Regex 1: Explicit SxxExx or Season xx Episode xx
-        # Use negative lookbehind to ensure S/E are not part of a word (like "Endgame")
+        filename_lower = file_name.lower()
+
+        # Extract Name, Year, Season, Episode
+
+        # 1. Year
+        year_match = re.search(r'\b(19|20)\d{2}\b', filename_lower)
+        year = int(year_match.group(0)) if year_match else 0
+
+        # 2. Season/Episode
+        season = 0
+        episode = 0
+
+        # Regex for SxxExx or Season xx Episode xx
         series_match = re.search(r'(?i)(?<![a-z])(?:s|season)\s*(\d+).*?(?<![a-z])(?:e|episode)\s*(\d+)', file_name)
-
-        # Regex 2: Just Episode xx (assume Season 1)
+        # Regex for just Episode xx (assume Season 1)
         episode_match = re.search(r'(?i)(?<![a-z])(?:e|episode)\s*(\d+)', file_name)
-
-        season = 100
-        episode = 100
 
         if series_match:
             season = int(series_match.group(1))
@@ -158,22 +187,31 @@ def sort_files(files):
             season = 1
             episode = int(episode_match.group(1))
 
-        res_match = re.search(r'(?i)(\d{3,4})p', file_name)
-        resolution = 0
-        if res_match:
-            res_val = int(res_match.group(1))
-            if res_val == 480: resolution = 1
-            elif res_val == 720: resolution = 2
-            elif res_val == 1080: resolution = 3
-            elif res_val == 2160: resolution = 4
-            else: resolution = 0
+        # 3. Name
+        # We want to strip the year or season/episode info to get the base name
+        indices = []
+        if year_match:
+            indices.append(year_match.start())
+        if series_match:
+            indices.append(series_match.start())
+        elif episode_match:
+            indices.append(episode_match.start())
 
-        is_series = bool(series_match or episode_match)
-        if not is_series:
-            season = float('inf')
-            episode = float('inf')
+        if indices:
+            cutoff = min(indices)
+            name = filename_lower[:cutoff]
+        else:
+            name = filename_lower
 
-        return (season, episode, resolution, file_name)
+        # Clean up name (remove special chars, trailing spaces)
+        name = re.sub(r'[_\-\.\(\)\[\]]', ' ', name).strip()
+        # Collapse multiple spaces
+        name = re.sub(r'\s+', ' ', name)
+
+        # 4. Quality
+        quality = get_quality_rank(file_name)
+
+        return (name, year, season, episode, quality)
 
     files.sort(key=sort_key)
     return files
