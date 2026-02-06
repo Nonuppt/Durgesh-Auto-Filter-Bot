@@ -171,7 +171,7 @@ def sort_files(files):
                 elif res_val == 2160: resolution = 4
                 else: resolution = 0
 
-            return (season, episode, resolution, file_name)
+            return (season, resolution, episode, file_name)
 
         else:
             # Movie Logic: Name -> Year -> Quality
