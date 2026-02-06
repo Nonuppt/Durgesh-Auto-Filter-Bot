@@ -138,6 +138,46 @@ async def save_file(media):
     logger.info(f"[SUCCESS] '{file_name}' saved to {target_db} DB.")
     return True, 1
 
+def sort_files(files):
+    def sort_key(file):
+        file_name = file.file_name
+        # Regex 1: Explicit SxxExx or Season xx Episode xx
+        # Use negative lookbehind to ensure S/E are not part of a word (like "Endgame")
+        series_match = re.search(r'(?i)(?<![a-z])(?:s|season)\s*(\d+).*?(?<![a-z])(?:e|episode)\s*(\d+)', file_name)
+
+        # Regex 2: Just Episode xx (assume Season 1)
+        episode_match = re.search(r'(?i)(?<![a-z])(?:e|episode)\s*(\d+)', file_name)
+
+        season = 100
+        episode = 100
+
+        if series_match:
+            season = int(series_match.group(1))
+            episode = int(series_match.group(2))
+        elif episode_match:
+            season = 1
+            episode = int(episode_match.group(1))
+
+        res_match = re.search(r'(?i)(\d{3,4})p', file_name)
+        resolution = 0
+        if res_match:
+            res_val = int(res_match.group(1))
+            if res_val == 480: resolution = 1
+            elif res_val == 720: resolution = 2
+            elif res_val == 1080: resolution = 3
+            elif res_val == 2160: resolution = 4
+            else: resolution = 0
+
+        is_series = bool(series_match or episode_match)
+        if not is_series:
+            season = float('inf')
+            episode = float('inf')
+
+        return (season, episode, resolution, file_name)
+
+    files.sort(key=sort_key)
+    return files
+
 async def get_search_results(chat_id, query, file_type=None, max_results=None, offset=0, filter=False):
     if chat_id is not None:
         settings = await get_settings(int(chat_id))
@@ -186,49 +226,38 @@ async def get_search_results(chat_id, query, file_type=None, max_results=None, o
     if file_type:
         filter_mongo["file_type"] = file_type
     
-    # The rest of the function remains the same, using parallel queries.
-    if ULTRA_FAST_MODE:
-        limit = max_results + 1
-        find_tasks = [Media.find(filter_mongo).sort("$natural", -1).skip(offset).limit(limit).to_list(length=limit)]
-        if MULTIPLE_DB:
-            find_tasks.append(Media2.find(filter_mongo).sort("$natural", -1).skip(offset).limit(limit).to_list(length=limit))
-        
-        results = await asyncio.gather(*find_tasks)
-        files = results[0]
-        if MULTIPLE_DB and len(results) > 1:
-            files.extend(results[1])
-        
-        files = files[:limit]
+    # Fetch more results to allow sorting
+    # We fetch from offset=0 to ensure global sorting of the first N items
+    # limit = offset + max_results + buffer.
+    # Buffer allows us to sort a decent amount of files.
+    fetch_limit = max(200, offset + max_results + 50)
 
-        has_next_page = len(files) > max_results
-        if has_next_page:
-            files = files[:-1]
+    count_tasks = [Media.count_documents(filter_mongo)]
+    find_tasks = [Media.find(filter_mongo).sort("$natural", -1).limit(fetch_limit).to_list(length=fetch_limit)]
 
-        next_offset = offset + len(files) if has_next_page else ""
-        total_results = offset + len(files) + (1 if has_next_page else 0)
-    else:
-        count_tasks = [Media.count_documents(filter_mongo)]
-        find_tasks = [Media.find(filter_mongo).sort("$natural", -1).skip(offset).limit(max_results).to_list(length=max_results)]
+    if MULTIPLE_DB:
+        count_tasks.append(Media2.count_documents(filter_mongo))
+        find_tasks.append(Media2.find(filter_mongo).sort("$natural", -1).limit(fetch_limit).to_list(length=fetch_limit))
 
-        if MULTIPLE_DB:
-            count_tasks.append(Media2.count_documents(filter_mongo))
-            find_tasks.append(Media2.find(filter_mongo).sort("$natural", -1).skip(offset).limit(max_results).to_list(length=max_results))
-        
-        count_results, find_results = await asyncio.gather(
-            asyncio.gather(*count_tasks),
-            asyncio.gather(*find_tasks)
-        )
-        
-        total_results = sum(count_results)
-        files = find_results[0]
-        if MULTIPLE_DB and len(find_results) > 1:
-            files.extend(find_results[1])
-        
-        files = files[:max_results]
-        
-        next_offset = offset + len(files)
-        if next_offset >= total_results:
-            next_offset = ""
+    count_results, find_results = await asyncio.gather(
+        asyncio.gather(*count_tasks),
+        asyncio.gather(*find_tasks)
+    )
+
+    total_results = sum(count_results)
+    files = find_results[0]
+    if MULTIPLE_DB and len(find_results) > 1:
+        files.extend(find_results[1])
+
+    # Sort the fetched files
+    files = sort_files(files)
+
+    # Slice the results for the requested page
+    files = files[offset : offset + max_results]
+
+    next_offset = offset + len(files)
+    if next_offset >= total_results:
+        next_offset = ""
 
     return files, next_offset, total_results
 
