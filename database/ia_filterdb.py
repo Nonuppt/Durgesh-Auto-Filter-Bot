@@ -158,22 +158,53 @@ def sort_files(files):
             season = 1
             episode = int(episode_match.group(1))
 
-        res_match = re.search(r'(?i)(\d{3,4})p', file_name)
-        resolution = 0
-        if res_match:
-            res_val = int(res_match.group(1))
-            if res_val == 480: resolution = 1
-            elif res_val == 720: resolution = 2
-            elif res_val == 1080: resolution = 3
-            elif res_val == 2160: resolution = 4
-            else: resolution = 0
-
         is_series = bool(series_match or episode_match)
-        if not is_series:
-            season = float('inf')
-            episode = float('inf')
 
-        return (season, episode, resolution, file_name)
+        if is_series:
+            res_match = re.search(r'(?i)(\d{3,4})p', file_name)
+            resolution = 0
+            if res_match:
+                res_val = int(res_match.group(1))
+                if res_val == 480: resolution = 1
+                elif res_val == 720: resolution = 2
+                elif res_val == 1080: resolution = 3
+                elif res_val == 2160: resolution = 4
+                else: resolution = 0
+
+            return (season, episode, resolution, file_name)
+
+        else:
+            # Movie Logic: Name -> Year -> Quality
+
+            # 1. Normalize Name and Extract Year
+            year_match = re.search(r'(?P<year>(?:19|20)\d{2})', file_name)
+
+            if year_match:
+                year = int(year_match.group('year'))
+                raw_name = file_name[:year_match.start()]
+            else:
+                year = 0
+                raw_name = file_name
+
+            name_clean = re.sub(r'[_\-\.\(\)\[\]]', ' ', raw_name)
+            name_clean = re.sub(r'\s+', ' ', name_clean).strip().lower()
+
+            # 2. Quality
+            res_match = re.search(r'(?i)\b(240|360|480|540|720|1080|2160)p?\b', file_name)
+            if res_match:
+                res = int(res_match.group(1))
+            else:
+                res = 0
+
+            rank = res * 10
+
+            is_hevc = bool(re.search(r'(?i)(hevc|x265)', file_name))
+            is_10bit = bool(re.search(r'(?i)(10bit|10-bit|10\s*bit)', file_name))
+
+            if is_hevc or is_10bit:
+                rank -= 1
+
+            return (float('inf'), float('inf'), name_clean, year, rank)
 
     files.sort(key=sort_key)
     return files
