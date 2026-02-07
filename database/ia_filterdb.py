@@ -165,11 +165,17 @@ def sort_files(files):
             resolution = 0
             if res_match:
                 res_val = int(res_match.group(1))
-                if res_val == 480: resolution = 1
-                elif res_val == 720: resolution = 2
-                elif res_val == 1080: resolution = 3
-                elif res_val == 2160: resolution = 4
+                if res_val == 480: resolution = 10
+                elif res_val == 720: resolution = 20
+                elif res_val == 1080: resolution = 30
+                elif res_val == 2160: resolution = 40
                 else: resolution = 0
+
+            is_hevc = bool(re.search(r'(?i)(hevc|x265)', file_name))
+            is_10bit = bool(re.search(r'(?i)(10bit|10-bit|10\s*bit)', file_name))
+
+            if is_hevc or is_10bit:
+                resolution -= 1
 
             return (season, resolution, episode, file_name)
 
