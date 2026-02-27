@@ -15,7 +15,7 @@ from database.config_db import mdb
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
 from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait, ChatAdminRequired, UserNotParticipant
-from database.ia_filterdb import Media, Media2, get_file_details, unpack_new_file_id, get_bad_files
+from database.ia_filterdb import Media, Media2, get_file_details, unpack_new_file_id, get_bad_files, get_dismiss_files
 from database.users_chats_db import db
 from info import *
 from utils import get_settings, save_group_settings, is_subscribed, is_req_subscribed, get_size, get_shortlink, is_check_admin, temp, get_readable_time, get_time, generate_settings_text, log_error, clean_filename
@@ -827,6 +827,38 @@ async def deletemultiplefiles(bot, message):
     ]]
     await message.reply_text(
         text=f"<b>Found {total} files for your query {keyword} !\n\nDo you want to delete?</b>",
+        reply_markup=InlineKeyboardMarkup(btn),
+        parse_mode=enums.ParseMode.HTML
+    )
+
+@Client.on_message(filters.command("dismiss") & filters.user(ADMINS))
+async def dismiss_files(bot, message):
+    chat_type = message.chat.type
+    if chat_type != enums.ChatType.PRIVATE:
+        return await message.reply_text(f"<b>Hey {message.from_user.mention}, This command won't work in groups. It only works on my PM !</b>")
+
+    try:
+        keyword = message.text.split(" ", 1)[1]
+    except:
+        return await message.reply_text(f"<b>Hey {message.from_user.mention}, Give me a keyword along with the command to dismiss files (HDTC, HDTS, CAMRip, Telesync, HDCam).</b>")
+
+    k = await bot.send_message(chat_id=message.chat.id, text=f"<b>Fetching Low Quality Files for your query {keyword} on DB... Please wait...</b>")
+    files, total = await get_dismiss_files(keyword)
+
+    if total == 0:
+        await k.edit_text(f"<b>No low quality files (HDTC, HDTS, CAMRip, Telesync, HDCam) found for your query {keyword} !</b>")
+        await asyncio.sleep(DELETE_TIME)
+        await k.delete()
+        return
+
+    await k.delete()
+    btn = [[
+       InlineKeyboardButton("⚠️ Yes, Delete ! ⚠️", callback_data=f"dismiss_delete#{keyword}")
+       ],[
+       InlineKeyboardButton("❌ No, Cancel ! ❌", callback_data="close_data")
+    ]]
+    await message.reply_text(
+        text=f"<b>Found {total} low quality files for your query {keyword} !\n(HDTC, HDTS, CAMRip, Telesync, HDCam)\n\nDo you want to delete them?</b>",
         reply_markup=InlineKeyboardMarkup(btn),
         parse_mode=enums.ParseMode.HTML
     )
