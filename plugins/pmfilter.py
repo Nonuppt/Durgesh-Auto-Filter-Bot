@@ -999,34 +999,33 @@ async def cb_handler(client: Client, query: CallbackQuery):
         deleted = 0
         async with lock:
             try:
-                for file in files:
-                    file_ids = file.file_id
-                    file_name = file.file_name
-                    result = await Media.collection.delete_one({
-                        '_id': file_ids,
-                    })
-                    if not result.deleted_count and MULTIPLE_DB:
-                        result = await Media2.collection.delete_one({
-                            '_id': file_ids,
-                        })
-                    if result.deleted_count:
-                        logger.info(
-                            f'LOW QUALITY ꜰɪʟᴇ ꜰᴏᴜɴᴅ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}! ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {file_name} ꜰʀᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ.')
-                    deleted += 1
-                    if deleted % 20 == 0:
-                        await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ꜱᴛᴀʀᴛᴇᴅ ꜰᴏʀ ᴅᴇʟᴇᴛɪɴɢ ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ. ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword} !\n\nᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ...</b>")
+                # Separate file IDs for Media and Media2 collections
+                media_file_ids = []
+                media2_file_ids = []
+
+                # Check which DB each file belongs to is tricky without fetching again or checking object type
+                # But get_dismiss_files returns a list of mixed objects if MULTIPLE_DB is true
+                # We can try to delete from both or check the object type if possible.
+                # However, since we have the list of files, we can just extract IDs.
+                # A safer approach for batch delete without knowing the source DB is to try both or rely on file existence check.
+                # But to be fast, we can just collect all IDs and run delete_many on both collections if MULTIPLE_DB.
+
+                all_file_ids = [file.file_id for file in files]
+
+                result_media = await Media.collection.delete_many({'_id': {'$in': all_file_ids}})
+                deleted += result_media.deleted_count
+
+                if MULTIPLE_DB:
+                    result_media2 = await Media2.collection.delete_many({'_id': {'$in': all_file_ids}})
+                    deleted += result_media2.deleted_count
+
+                logger.info(f'LOW QUALITY ꜰɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ꜰᴏʀ ǫᴜᴇʀʏ {keyword}! ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {deleted} ꜰʀᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ.')
+
             except Exception as e:
                 print(f"Error In dismiss_delete -{e}")
                 await query.message.edit_text(f'Error: {e}')
             else:
                 await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅɪsᴍɪss !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
-                try:
-                    await client.send_message(
-                        chat_id=query.from_user.id,
-                        text=f"<b>✅ Dismiss Command Report\n\nQuery: {keyword}\nTotal Deleted: {deleted}\n\nThe operation completed successfully.</b>"
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to send dismiss report to admin: {e}")
 
     elif query.data.startswith("opnsetgrp"):
         ident, grp_id = query.data.split("#")
