@@ -1019,7 +1019,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 print(f"Error In dismiss_delete -{e}")
                 await query.message.edit_text(f'Error: {e}')
             else:
-                await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅᴇʟᴇᴛᴀᴛɪᴏɴ !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
+                await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅɪsᴍɪss !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
+                try:
+                    await client.send_message(
+                        chat_id=query.from_user.id,
+                        text=f"<b>✅ Dismiss Command Report\n\nQuery: {keyword}\nTotal Deleted: {deleted}\n\nThe operation completed successfully.</b>"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send dismiss report to admin: {e}")
 
     elif query.data.startswith("opnsetgrp"):
         ident, grp_id = query.data.split("#")
