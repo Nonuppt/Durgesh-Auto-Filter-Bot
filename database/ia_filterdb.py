@@ -339,27 +339,44 @@ async def get_dismiss_files(query, file_type=None):
     else:
         raw_pattern = query.replace(" ", r".*[\s\.\+\-_()]")
 
-    qualities = ["HDTC", "HDTS", "CAMRip", "Telesync", "HDCam"]
-    quality_pattern = "|".join([re.escape(q) for q in qualities])
-
-    # Combined regex: Lookahead for query AND lookahead for quality
-    # We use lookaheads to ensure both patterns exist anywhere in the string
-    combined_pattern = f"(?=.*{raw_pattern})(?=.*({quality_pattern}))"
-
     try:
-        regex = re.compile(combined_pattern, flags=re.IGNORECASE)
+        query_regex = re.compile(raw_pattern, flags=re.IGNORECASE)
     except:
         return [], 0
 
+    qualities = ["HDTC", "HDTS", "CAMRip", "Telesync", "HDCam"]
+    quality_pattern = "|".join([re.escape(q) for q in qualities])
+    try:
+        quality_regex = re.compile(quality_pattern, flags=re.IGNORECASE)
+    except:
+        return [], 0
+
+    # Using $and with two separate regex conditions is often more performant in MongoDB
+    # than a single complex regex with lookaheads.
+    # Condition 1: Filename matches the query
+    # Condition 2: Filename matches one of the quality tags
+
     if USE_CAPTION_FILTER:
-        filter = {'$or': [{'file_name': regex}, {'caption': regex}]}
+        filter = {
+            '$and': [
+                {'$or': [{'file_name': query_regex}, {'caption': query_regex}]},
+                {'$or': [{'file_name': quality_regex}, {'caption': quality_regex}]}
+            ]
+        }
     else:
-        filter = {'file_name': regex}
+        filter = {
+            '$and': [
+                {'file_name': query_regex},
+                {'file_name': quality_regex}
+            ]
+        }
 
     if file_type:
         filter['file_type'] = file_type
 
     cursor1 = Media.find(filter).sort('$natural', -1)
+    # Using to_list with length from count_documents is standard here but ensure count isn't too huge.
+    # The batch delete logic in pmfilter handles the rest.
     files1 = await cursor1.to_list(length=(await Media.count_documents(filter)))
 
     if MULTIPLE_DB:
