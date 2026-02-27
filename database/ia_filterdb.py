@@ -328,6 +328,51 @@ async def get_bad_files(query, file_type=None):
     return files, total_results
 
 
+async def get_dismiss_files(query, file_type=None):
+    query = query.strip()
+    if not query:
+        return [], 0
+
+    # Process the query to handle separators (like in get_bad_files)
+    if ' ' not in query:
+        raw_pattern = r"(\b|[\.\+\-_])" + query + r"(\b|[\.\+\-_])"
+    else:
+        raw_pattern = query.replace(" ", r".*[\s\.\+\-_()]")
+
+    qualities = ["HDTC", "HDTS", "CAMRip", "Telesync", "HDCam"]
+    quality_pattern = "|".join([re.escape(q) for q in qualities])
+
+    # Combined regex: Lookahead for query AND lookahead for quality
+    # We use lookaheads to ensure both patterns exist anywhere in the string
+    combined_pattern = f"(?=.*{raw_pattern})(?=.*({quality_pattern}))"
+
+    try:
+        regex = re.compile(combined_pattern, flags=re.IGNORECASE)
+    except:
+        return [], 0
+
+    if USE_CAPTION_FILTER:
+        filter = {'$or': [{'file_name': regex}, {'caption': regex}]}
+    else:
+        filter = {'file_name': regex}
+
+    if file_type:
+        filter['file_type'] = file_type
+
+    cursor1 = Media.find(filter).sort('$natural', -1)
+    files1 = await cursor1.to_list(length=(await Media.count_documents(filter)))
+
+    if MULTIPLE_DB:
+        cursor2 = Media2.find(filter).sort('$natural', -1)
+        files2 = await cursor2.to_list(length=(await Media2.count_documents(filter)))
+        files = files1 + files2
+    else:
+        files = files1
+
+    total_results = len(files)
+    return files, total_results
+
+
 async def get_file_details(query):
     filter = {"file_id": query}
     

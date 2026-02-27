@@ -4,7 +4,7 @@ from fuzzywuzzy import process
 from dreamxbotz.util.file_properties import get_name, get_hash
 from urllib.parse import quote_plus
 import logging
-from database.ia_filterdb import Media, Media2, get_file_details, get_search_results, get_bad_files
+from database.ia_filterdb import Media, Media2, get_file_details, get_search_results, get_bad_files, get_dismiss_files
 from database.config_db import mdb
 from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerIdInvalid, ChatAdminRequired, UserNotParticipant
 from pyrogram import Client, filters, enums
@@ -960,7 +960,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
 
     elif query.data.startswith("killfilesdq"):
-        ident, keyword = query.data.split("#")
+        ident, keyword = query.data.split("#", 1)
         await query.message.edit_text(f"<b>Fetching Files for your query {keyword} on DB... Please wait...</b>")
         files, total = await get_bad_files(keyword)
         await query.message.edit_text("<b>ꜰɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ᴘʀᴏᴄᴇꜱꜱ ᴡɪʟʟ ꜱᴛᴀʀᴛ ɪɴ 5 ꜱᴇᴄᴏɴᴅꜱ !</b>")
@@ -989,6 +989,44 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 await query.message.edit_text(f'Error: {e}')
             else:
                 await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅᴇʟᴇᴛᴀᴛɪᴏɴ !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
+
+    elif query.data.startswith("dismiss_delete"):
+        ident, keyword = query.data.split("#", 1)
+        await query.message.edit_text(f"<b>Fetching Low Quality Files for your query {keyword} on DB... Please wait...</b>")
+        files, total = await get_dismiss_files(keyword)
+        await query.message.edit_text("<b>Low Quality ꜰɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ᴘʀᴏᴄᴇꜱꜱ ᴡɪʟʟ ꜱᴛᴀʀᴛ ɪɴ 5 ꜱᴇᴄᴏɴᴅꜱ !</b>")
+        await asyncio.sleep(5)
+        deleted = 0
+        async with lock:
+            try:
+                for file in files:
+                    file_ids = file.file_id
+                    file_name = file.file_name
+                    result = await Media.collection.delete_one({
+                        '_id': file_ids,
+                    })
+                    if not result.deleted_count and MULTIPLE_DB:
+                        result = await Media2.collection.delete_one({
+                            '_id': file_ids,
+                        })
+                    if result.deleted_count:
+                        logger.info(
+                            f'LOW QUALITY ꜰɪʟᴇ ꜰᴏᴜɴᴅ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}! ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {file_name} ꜰʀᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ.')
+                    deleted += 1
+                    if deleted % 20 == 0:
+                        await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ꜱᴛᴀʀᴛᴇᴅ ꜰᴏʀ ᴅᴇʟᴇᴛɪɴɢ ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ. ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword} !\n\nᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ...</b>")
+            except Exception as e:
+                print(f"Error In dismiss_delete -{e}")
+                await query.message.edit_text(f'Error: {e}')
+            else:
+                await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅɪsᴍɪss !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
+                try:
+                    await client.send_message(
+                        chat_id=query.from_user.id,
+                        text=f"<b>✅ Dismiss Command Report\n\nQuery: {keyword}\nTotal Deleted: {deleted}\n\nThe operation completed successfully.</b>"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send dismiss report to admin: {e}")
 
     elif query.data.startswith("opnsetgrp"):
         ident, grp_id = query.data.split("#")
