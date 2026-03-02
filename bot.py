@@ -39,6 +39,11 @@ files = glob.glob(ppath)
 
 async def dreamxbotz_start():
     print('\n\nInitalizing DreamxBotz')
+    app = web.AppRunner(await web_server())
+    await app.setup()
+    bind_address = "0.0.0.0"
+    await web.TCPSite(app, bind_address, PORT).start()
+    dreamxbotz.loop.create_task(keep_alive())
     await dreamxbotz.start()
     bot_info = await dreamxbotz.get_me()
     dreamxbotz.username = bot_info.username
@@ -54,7 +59,7 @@ async def dreamxbotz_start():
             spec.loader.exec_module(load)
             sys.modules["plugins." + plugin_name] = load
             print("DreamxBotz Imported => " + plugin_name)
-    if ON_HEROKU:
+    if ON_HEROKU or ON_RENDER:
         asyncio.create_task(ping_server()) 
     b_users, b_chats = await db.get_banned()
     temp.BANNED_USERS = b_users
@@ -80,11 +85,6 @@ async def dreamxbotz_start():
     now = datetime.now(tz)
     time = now.strftime("%H:%M:%S %p")
     await dreamxbotz.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(temp.B_LINK, today, time))
-    app = web.AppRunner(await web_server())
-    await app.setup()
-    bind_address = "0.0.0.0"
-    await web.TCPSite(app, bind_address, PORT).start()
-    dreamxbotz.loop.create_task(keep_alive())
     await idle()
     
 if __name__ == '__main__':
