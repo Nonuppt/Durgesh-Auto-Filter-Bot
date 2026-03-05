@@ -7,6 +7,7 @@ from database.ia_filterdb import Media, Media2, db as db_stats, db2 as db2_stats
 from utils import get_size, temp, get_settings, get_readable_time
 from Script import script
 from pyrogram.errors import ChatAdminRequired
+import html
 import asyncio
 import psutil
 import logging
@@ -59,13 +60,22 @@ async def save_group(bot, message):
                 try:
                     temp.MELCOW['welcome'] = await message.reply_photo(
                         photo=MELCOW_PHOTO,
-                        caption=script.MELCOW_ENG.format(u.mention, message.chat.title),
+                        caption=script.MELCOW_ENG.format(u.mention, html.escape(message.chat.title)),
                         reply_markup=InlineKeyboardMarkup([
                                 [
                                     InlineKeyboardButton("📌 ᴄᴏɴᴛᴀᴄᴛ ꜱᴜᴘᴘᴏʀᴛ 📌", url=OWNER_LNK)
                                 ]]),parse_mode=enums.ParseMode.HTML)
                 except Exception as e:
-                    print(f"Welcome photo send failed: {e}")
+                    logging.error(f"Welcome photo send failed: {e}")
+                    try:
+                        temp.MELCOW['welcome'] = await message.reply_text(
+                            text=script.MELCOW_ENG.format(u.mention, html.escape(message.chat.title)),
+                            reply_markup=InlineKeyboardMarkup([
+                                    [
+                                        InlineKeyboardButton("📌 ᴄᴏɴᴛᴀᴄᴛ ꜱᴜᴘᴘᴏʀᴛ 📌", url=OWNER_LNK)
+                                    ]]),parse_mode=enums.ParseMode.HTML)
+                    except Exception as e2:
+                        logging.error(f"Welcome text fallback send failed: {e2}")
         if settings.get("auto_delete"):
             await asyncio.sleep(600)
             try:
