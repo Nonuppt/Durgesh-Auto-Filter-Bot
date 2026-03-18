@@ -2052,9 +2052,13 @@ async def auto_filter(client, msg, spoll=False):
 
 async def ai_spell_check(chat_id, wrong_name):
     async def search_movie(wrong_name):
-        search_results = imdb.search_movie(wrong_name)
-        movie_list = [movie['title'] for movie in search_results]
-        return movie_list
+        try:
+            search_results = imdb.search_movie(wrong_name)
+            movie_list = [movie['title'] for movie in search_results]
+            return movie_list
+        except Exception as e:
+            logger.error(f"IMDB spell check search error: {e}")
+            return []
     movie_list = await search_movie(wrong_name)
     if not movie_list:
         return
