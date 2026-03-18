@@ -4,7 +4,7 @@ from fuzzywuzzy import process
 from dreamxbotz.util.file_properties import get_name, get_hash
 from urllib.parse import quote_plus
 import logging
-from database.ia_filterdb import Media, Media2, get_file_details, get_search_results, get_bad_files, get_dismiss_files
+from database.ia_filterdb import Media, Media2, get_file_details, get_search_results, get_bad_files
 from database.config_db import mdb
 from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerIdInvalid, ChatAdminRequired, UserNotParticipant
 from pyrogram import Client, filters, enums
@@ -989,43 +989,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 await query.message.edit_text(f'Error: {e}')
             else:
                 await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅᴇʟᴇᴛᴀᴛɪᴏɴ !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰɪʟᴇꜱ ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
-
-    elif query.data.startswith("dismiss_delete"):
-        ident, keyword = query.data.split("#", 1)
-        await query.message.edit_text(f"<b>Fetching Low Quality Files for your query {keyword} on DB... Please wait...</b>")
-        files, total = await get_dismiss_files(keyword)
-        await query.message.edit_text("<b>Low Quality ꜰɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ᴘʀᴏᴄᴇꜱꜱ ᴡɪʟʟ ꜱᴛᴀʀᴛ ɪɴ 5 ꜱᴇᴄᴏɴᴅꜱ !</b>")
-        await asyncio.sleep(5)
-        deleted = 0
-        async with lock:
-            try:
-                # Separate file IDs for Media and Media2 collections
-                media_file_ids = []
-                media2_file_ids = []
-
-                # Check which DB each file belongs to is tricky without fetching again or checking object type
-                # But get_dismiss_files returns a list of mixed objects if MULTIPLE_DB is true
-                # We can try to delete from both or check the object type if possible.
-                # However, since we have the list of files, we can just extract IDs.
-                # A safer approach for batch delete without knowing the source DB is to try both or rely on file existence check.
-                # But to be fast, we can just collect all IDs and run delete_many on both collections if MULTIPLE_DB.
-
-                all_file_ids = [file.file_id for file in files]
-
-                result_media = await Media.collection.delete_many({'_id': {'$in': all_file_ids}})
-                deleted += result_media.deleted_count
-
-                if MULTIPLE_DB:
-                    result_media2 = await Media2.collection.delete_many({'_id': {'$in': all_file_ids}})
-                    deleted += result_media2.deleted_count
-
-                logger.info(f'LOW QUALITY ꜰɪʟᴇ ᴅᴇʟᴇᴛɪᴏɴ ꜰᴏʀ ǫᴜᴇʀʏ {keyword}! ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {deleted} ꜰʀᴏᴍ ᴅᴀᴛᴀʙᴀꜱᴇ.')
-
-            except Exception as e:
-                print(f"Error In dismiss_delete -{e}")
-                await query.message.edit_text(f'Error: {e}')
-            else:
-                await query.message.edit_text(f"<b>ᴘʀᴏᴄᴇꜱꜱ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ꜰᴏʀ ꜰɪʟᴇ ᴅɪsᴍɪss !\n\nꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ {str(deleted)} ꜰʀᴏᴍ ᴅʙ ꜰᴏʀ ʏᴏᴜʀ ǫᴜᴇʀʏ {keyword}.</b>")
 
     elif query.data.startswith("opnsetgrp"):
         ident, grp_id = query.data.split("#")
