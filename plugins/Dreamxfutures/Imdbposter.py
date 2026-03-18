@@ -67,7 +67,7 @@ async def get_movie_details(query, id=False, file=None):
                         year = list_to_str(year[:1])
                 else:
                     year = None
-                movieid = ia.search_movie(title.lower(), results=10)
+                movieid = await asyncio.to_thread(ia.search_movie, title.lower(), results=10)
                 if not movieid:
                     return None
                 if year:
@@ -82,8 +82,8 @@ async def get_movie_details(query, id=False, file=None):
                 movieid = movieid[0].movieID
             else:
                 movieid = query
-            movie = ia.get_movie(movieid)
-            ia.update(movie, info=['main', 'vote details'])
+            movie = await asyncio.to_thread(ia.get_movie, movieid)
+            await asyncio.to_thread(ia.update, movie, info=['main', 'vote details'])
         except Exception as e:
             logger.error(f"Error fetching IMDB details: {e}")
             return None

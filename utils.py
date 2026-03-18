@@ -220,7 +220,7 @@ async def get_poster(query, bulk=False, id=False, file=None):
                     year = list_to_str(year[:1])
             else:
                 year = None
-            movieid = imdb.search_movie(title.lower(), results=10)
+            movieid = await asyncio.to_thread(imdb.search_movie, title.lower(), results=10)
             if not movieid:
                 return None
             if year:
@@ -237,8 +237,8 @@ async def get_poster(query, bulk=False, id=False, file=None):
             movieid = movieid[0].movieID
         else:
             movieid = query
-        movie = imdb.get_movie(movieid)
-        imdb.update(movie, info=['main', 'vote details'])
+        movie = await asyncio.to_thread(imdb.get_movie, movieid)
+        await asyncio.to_thread(imdb.update, movie, info=['main', 'vote details'])
     except Exception as e:
         logger.error(f"Error fetching IMDB details: {e}")
         return None

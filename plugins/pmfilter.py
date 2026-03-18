@@ -2053,7 +2053,7 @@ async def auto_filter(client, msg, spoll=False):
 async def ai_spell_check(chat_id, wrong_name):
     async def search_movie(wrong_name):
         try:
-            search_results = imdb.search_movie(wrong_name)
+            search_results = await asyncio.to_thread(imdb.search_movie, wrong_name)
             movie_list = [movie['title'] for movie in search_results]
             return movie_list
         except Exception as e:
