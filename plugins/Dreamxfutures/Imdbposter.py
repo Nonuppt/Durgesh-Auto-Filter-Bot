@@ -53,36 +53,41 @@ async def fetch_image(url, size=(860, 1200)):
 
 async def get_movie_details(query, id=False, file=None):
     try:
-        if not id:
-            query = query.strip().lower()
-            title = query
-            year = re.findall(r'[1-2]\d{3}$', query, re.IGNORECASE)
-            if year:
-                year = list_to_str(year[:1])
-                title = query.replace(year, "").strip()
-            elif file is not None:
-                year = re.findall(r'[1-2]\d{3}', file, re.IGNORECASE)
+        try:
+            if not id:
+                query = query.strip().lower()
+                title = query
+                year = re.findall(r'[1-2]\d{3}$', query, re.IGNORECASE)
                 if year:
                     year = list_to_str(year[:1])
-            else:
-                year = None
-            movieid = ia.search_movie(title.lower(), results=10)
-            if not movieid:
-                return None
-            if year:
-                filtered = list(filter(lambda k: str(k.get('year')) == str(year), movieid))
-                if not filtered:
+                    title = query.replace(year, "").strip()
+                elif file is not None:
+                    year = re.findall(r'[1-2]\d{3}', file, re.IGNORECASE)
+                    if year:
+                        year = list_to_str(year[:1])
+                else:
+                    year = None
+                movieid = ia.search_movie(title.lower(), results=10)
+                if not movieid:
+                    return None
+                if year:
+                    filtered = list(filter(lambda k: str(k.get('year')) == str(year), movieid))
+                    if not filtered:
+                        filtered = movieid
+                else:
                     filtered = movieid
+                movieid = list(filter(lambda k: k.get('kind') in ['movie', 'tv series'], filtered))
+                if not movieid:
+                    movieid = filtered
+                movieid = movieid[0].movieID
             else:
-                filtered = movieid
-            movieid = list(filter(lambda k: k.get('kind') in ['movie', 'tv series'], filtered))
-            if not movieid:
-                movieid = filtered
-            movieid = movieid[0].movieID
-        else:
-            movieid = query
-        movie = ia.get_movie(movieid)
-        ia.update(movie, info=['main', 'vote details'])
+                movieid = query
+            movie = ia.get_movie(movieid)
+            ia.update(movie, info=['main', 'vote details'])
+        except Exception as e:
+            logger.error(f"Error fetching IMDB details: {e}")
+            return None
+
         if movie.get("original air date"):
             date = movie["original air date"]
         elif movie.get("year"):
