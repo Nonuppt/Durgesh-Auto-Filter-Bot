@@ -42,6 +42,7 @@ class Media(Document):
     file_type = fields.StrField(allow_none=True)
     mime_type = fields.StrField(allow_none=True)
     caption = fields.StrField(allow_none=True)
+    cover = fields.StrField(allow_none=True)
 
     class Meta:
         indexes = ("$file_name",)
@@ -57,6 +58,8 @@ class Media2(Document):
     file_type = fields.StrField(allow_none=True)
     mime_type = fields.StrField(allow_none=True)
     caption = fields.StrField(allow_none=True)
+    cover = fields.StrField(allow_none=True)
+
 
     class Meta:
         indexes = ("$file_name",)
@@ -111,6 +114,7 @@ async def save_file(media):
                 "Error during MULTIPLE_DB check; defaulting to primary DB.", exc_info=e
             )
     try:
+        cover_to_use = getattr(getattr(media, "cover", None), "file_id", None)
         record = saveMedia(
             file_id=file_id,
             file_ref=file_ref,
@@ -119,9 +123,10 @@ async def save_file(media):
             file_type=media.file_type,
             mime_type=media.mime_type,
             caption=(media.caption.html if media.caption and INDEX_CAPTION else None),
+            cover=cover_to_use if COVERX else None,
         )
-    except ValidationError as e:
-        logger.exception(f"[VALIDATION ERROR] '{file_name}' → {e}")
+    except Exception as e:
+        logger.exception(f"[ERROR] '{file_name}' → {e}")
         return False, 2
     try:
         await record.commit()
@@ -135,85 +140,8 @@ async def save_file(media):
             f"[ERROR] Failed commit of '{file_name}' to {target_db} DB.", exc_info=e
         )
         return False, 3
-    logger.info(f"[SUCCESS] '{file_name}' saved to {target_db} DB.")
+    #logger.info(f"[SUCCESS] '{file_name}' saved to {target_db} DB.")
     return True, 1
-
-def sort_files(files):
-    def sort_key(file):
-        file_name = file.file_name
-        # Regex 1: Explicit SxxExx or Season xx Episode xx
-        # Use negative lookbehind to ensure S/E are not part of a word (like "Endgame")
-        series_match = re.search(r'(?i)(?<![a-z])(?:s|season)\s*(\d+).*?(?<![a-z])(?:e|episode)\s*(\d+)', file_name)
-
-        # Regex 2: Just Episode xx (assume Season 1)
-        episode_match = re.search(r'(?i)(?<![a-z])(?:e|episode)\s*(\d+)', file_name)
-
-        season = 100
-        episode = 100
-
-        if series_match:
-            season = int(series_match.group(1))
-            episode = int(series_match.group(2))
-        elif episode_match:
-            season = 1
-            episode = int(episode_match.group(1))
-
-        is_series = bool(series_match or episode_match)
-
-        if is_series:
-            res_match = re.search(r'(?i)(\d{3,4})p', file_name)
-            resolution = 0
-            if res_match:
-                res_val = int(res_match.group(1))
-                if res_val == 480: resolution = 10
-                elif res_val == 720: resolution = 20
-                elif res_val == 1080: resolution = 30
-                elif res_val == 2160: resolution = 40
-                else: resolution = 0
-
-            is_hevc = bool(re.search(r'(?i)(hevc|x265)', file_name))
-            is_10bit = bool(re.search(r'(?i)(10bit|10-bit|10\s*bit)', file_name))
-
-            if is_hevc or is_10bit:
-                resolution -= 1
-
-            return (season, resolution, episode, file_name)
-
-        else:
-            # Movie Logic: Name -> Year -> Quality
-
-            # 1. Normalize Name and Extract Year
-            year_match = re.search(r'(?P<year>(?:19|20)\d{2})', file_name)
-
-            if year_match:
-                year = int(year_match.group('year'))
-                raw_name = file_name[:year_match.start()]
-            else:
-                year = 0
-                raw_name = file_name
-
-            name_clean = re.sub(r'[_\-\.\(\)\[\]]', ' ', raw_name)
-            name_clean = re.sub(r'\s+', ' ', name_clean).strip().lower()
-
-            # 2. Quality
-            res_match = re.search(r'(?i)\b(240|360|480|540|720|1080|2160)p?\b', file_name)
-            if res_match:
-                res = int(res_match.group(1))
-            else:
-                res = 0
-
-            rank = res * 10
-
-            is_hevc = bool(re.search(r'(?i)(hevc|x265)', file_name))
-            is_10bit = bool(re.search(r'(?i)(10bit|10-bit|10\s*bit)', file_name))
-
-            if is_hevc or is_10bit:
-                rank -= 1
-
-            return (float('inf'), float('inf'), name_clean, year, rank)
-
-    files.sort(key=sort_key)
-    return files
 
 async def get_search_results(chat_id, query, file_type=None, max_results=None, offset=0, filter=False):
     if chat_id is not None:
@@ -263,38 +191,49 @@ async def get_search_results(chat_id, query, file_type=None, max_results=None, o
     if file_type:
         filter_mongo["file_type"] = file_type
     
-    # Fetch more results to allow sorting
-    # We fetch from offset=0 to ensure global sorting of the first N items
-    # limit = offset + max_results + buffer.
-    # Buffer allows us to sort a decent amount of files.
-    fetch_limit = max(200, offset + max_results + 50)
+    # The rest of the function remains the same, using parallel queries.
+    if ULTRA_FAST_MODE:
+        limit = max_results + 1
+        find_tasks = [Media.find(filter_mongo).sort("$natural", -1).skip(offset).limit(limit).to_list(length=limit)]
+        if MULTIPLE_DB:
+            find_tasks.append(Media2.find(filter_mongo).sort("$natural", -1).skip(offset).limit(limit).to_list(length=limit))
+        
+        results = await asyncio.gather(*find_tasks)
+        files = results[0]
+        if MULTIPLE_DB and len(results) > 1:
+            files.extend(results[1])
+        
+        files = files[:limit]
 
-    count_tasks = [Media.count_documents(filter_mongo)]
-    find_tasks = [Media.find(filter_mongo).sort("$natural", -1).limit(fetch_limit).to_list(length=fetch_limit)]
+        has_next_page = len(files) > max_results
+        if has_next_page:
+            files = files[:-1]
 
-    if MULTIPLE_DB:
-        count_tasks.append(Media2.count_documents(filter_mongo))
-        find_tasks.append(Media2.find(filter_mongo).sort("$natural", -1).limit(fetch_limit).to_list(length=fetch_limit))
+        next_offset = offset + len(files) if has_next_page else ""
+        total_results = offset + len(files) + (1 if has_next_page else 0)
+    else:
+        count_tasks = [Media.count_documents(filter_mongo)]
+        find_tasks = [Media.find(filter_mongo).sort("$natural", -1).skip(offset).limit(max_results).to_list(length=max_results)]
 
-    count_results, find_results = await asyncio.gather(
-        asyncio.gather(*count_tasks),
-        asyncio.gather(*find_tasks)
-    )
-
-    total_results = sum(count_results)
-    files = find_results[0]
-    if MULTIPLE_DB and len(find_results) > 1:
-        files.extend(find_results[1])
-
-    # Sort the fetched files
-    files = sort_files(files)
-
-    # Slice the results for the requested page
-    files = files[offset : offset + max_results]
-
-    next_offset = offset + len(files)
-    if next_offset >= total_results:
-        next_offset = ""
+        if MULTIPLE_DB:
+            count_tasks.append(Media2.count_documents(filter_mongo))
+            find_tasks.append(Media2.find(filter_mongo).sort("$natural", -1).skip(offset).limit(max_results).to_list(length=max_results))
+        
+        count_results, find_results = await asyncio.gather(
+            asyncio.gather(*count_tasks),
+            asyncio.gather(*find_tasks)
+        )
+        
+        total_results = sum(count_results)
+        files = find_results[0]
+        if MULTIPLE_DB and len(find_results) > 1:
+            files.extend(find_results[1])
+        
+        files = files[:max_results]
+        
+        next_offset = offset + len(files)
+        if next_offset >= total_results:
+            next_offset = ""
 
     return files, next_offset, total_results
 
@@ -324,51 +263,6 @@ async def get_bad_files(query, file_type=None):
         files = files1 + files2
     else:
         files = files1
-    total_results = len(files)
-    return files, total_results
-
-
-async def get_dismiss_files(query, file_type=None):
-    query = query.strip()
-    if not query:
-        return [], 0
-
-    # Process the query to handle separators (like in get_bad_files)
-    if ' ' not in query:
-        raw_pattern = r"(\b|[\.\+\-_])" + query + r"(\b|[\.\+\-_])"
-    else:
-        raw_pattern = query.replace(" ", r".*[\s\.\+\-_()]")
-
-    qualities = ["HDTC", "HDTS", "CAMRip", "Telesync", "HDCam"]
-    quality_pattern = "|".join([re.escape(q) for q in qualities])
-
-    # Combined regex: Lookahead for query AND lookahead for quality
-    # We use lookaheads to ensure both patterns exist anywhere in the string
-    combined_pattern = f"(?=.*{raw_pattern})(?=.*({quality_pattern}))"
-
-    try:
-        regex = re.compile(combined_pattern, flags=re.IGNORECASE)
-    except:
-        return [], 0
-
-    if USE_CAPTION_FILTER:
-        filter = {'$or': [{'file_name': regex}, {'caption': regex}]}
-    else:
-        filter = {'file_name': regex}
-
-    if file_type:
-        filter['file_type'] = file_type
-
-    cursor1 = Media.find(filter).sort('$natural', -1)
-    files1 = await cursor1.to_list(length=(await Media.count_documents(filter)))
-
-    if MULTIPLE_DB:
-        cursor2 = Media2.find(filter).sort('$natural', -1)
-        files2 = await cursor2.to_list(length=(await Media2.count_documents(filter)))
-        files = files1 + files2
-    else:
-        files = files1
-
     total_results = len(files)
     return files, total_results
 
