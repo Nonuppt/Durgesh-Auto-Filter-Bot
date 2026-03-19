@@ -18,28 +18,28 @@ def is_valid_ip(ip):
 
 # Main Variables 
 
-API_ID = int(environ.get('API_ID', '21140176'))
-API_HASH = environ.get('API_HASH', 'b081ec8da8cf5263a6593041c1ae2a3b')
-BOT_TOKEN = environ.get('BOT_TOKEN', '')
-ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '6222491731').split()]
-USERNAME = environ.get('USERNAME', "https://telegram.me/Movieroll_M")
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1003281818923'))
-MOVIE_GROUP_LINK = environ.get('MOVIE_GROUP_LINK', 'https://t.me/Movie_Provider_2')
+API_ID = int(environ.get('API_ID', '21006440'))
+API_HASH = environ.get('API_HASH', 'f3b3fae13d20ab4b5f34ac3475749c20')
+BOT_TOKEN = environ.get('BOT_TOKEN', '8503469545:AAEbRC2IDVGhA3dYeG4fMRLtMamv3AZTnzI')
+ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '6277856017').split()]
+USERNAME = environ.get('USERNAME', "https://telegram.me/Pixell_Pulse")
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1002714001584'))
+MOVIE_GROUP_LINK = environ.get('MOVIE_GROUP_LINK', 'https://t.me/+1CRi7dMEQhU0Nzk9')
 
 # Pics 
 
-QR_CODE = environ.get('QR_CODE', 'https://graph.org/file/ccb9db43e62a2e524928e.jpg')
+QR_CODE = environ.get('QR_CODE', 'https://files.catbox.moe/53yvsq.jpg')
 START_IMG = environ.get('START_IMG', 'https://i.ibb.co/LdT5fdJY/photo-2025-08-13-01-12-38-7537871916074270724.jpg')
 FSUB_PICS = (environ.get('FSUB_PICS', 'https://graph.org/file/7478ff3eac37f4329c3d8.jpg https://graph.org/file/56b5deb73f3b132e2bb73.jpg')).split() 
 
 # File Limit
 
 IS_FILE_LIMIT = is_enabled('IS_FILE_LIMIT', True) # Enable Or Disable File Limit
-FILES_LIMIT = int(environ.get("FREE_FILES", "3")) #No. of File User Gets In Free
+FILES_LIMIT = int(environ.get("FREE_FILES", "0")) #No. of File User Gets In Free
 
 # Database Settings
 
-DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://sbmod88_db_user:XCLxrjdGlaHTG6mz@cluster0.qndjonz.mongodb.net/?appName=Cluster0")
+DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://gouravbolange_db_user:yos9d73FCsyLpiI6@cluster0.wxnzgc0.mongodb.net/?retryWrites=true&w=majority&autobot=Cluster0")
 FILES_DATABASE_URL = environ.get('FILES_DATABASE_URL', "mongodb+srv://gouravbolange_db_user:yos9d73FCsyLpiI6@cluster0.wxnzgc0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0") # For Files
 SECOND_FILES_DATABASE_URL = environ.get('SECOND_FILES_DATABASE_URL', "") # 2nd DB For Files
 DATABASE_NAME = environ.get('DATABASE_NAME', "Silicon")
@@ -48,39 +48,40 @@ COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Silicon_Files')
 # Verify/Shortlink Settings 
 
 IS_VERIFY = is_enabled('IS_VERIFY', True)
-LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1003281818923'))
-LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1003281818923'))
-TUTORIAL = environ.get("TUTORIAL", "https://t.me/Movieroll_Chat")
-TUTORIAL2 = environ.get("TUTORIAL2", "https://t.me/Movieroll_Chat")
-TUTORIAL3 = environ.get("TUTORIAL3", "https://t.me/Movieroll_Chat")
+LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1002714001584'))
+LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1002714001584'))
+TUTORIAL = environ.get("TUTORIAL", "https://t.me/Pixell_Pulse/16")
+TUTORIAL2 = environ.get("TUTORIAL2", "https://t.me/Pixell_Pulse/16")
+TUTORIAL3 = environ.get("TUTORIAL3", "https://t.me/Pixell_Pulse/16")
 VERIFY_IMG = environ.get("VERIFY_IMG", "https://graph.org/file/1669ab9af68eaa62c3ca4.jpg")
-SHORTENER_API = environ.get("SHORTENER_API", "c7d26524bec5a47ef34454ed1348511f4124bda6")
+SHORTENER_API = environ.get("SHORTENER_API", "f582950a9e3a93c84d138586e6fab5a25b934e67")
 SHORTENER_WEBSITE = environ.get("SHORTENER_WEBSITE", 'shortxlinks.com')
-SHORTENER_API2 = environ.get("SHORTENER_API2", "c7d26524bec5a47ef34454ed1348511f4124bda6")
+SHORTENER_API2 = environ.get("SHORTENER_API2", "f582950a9e3a93c84d138586e6fab5a25b934e67")
 SHORTENER_WEBSITE2 = environ.get("SHORTENER_WEBSITE2", 'shortxlinks2.com')
-SHORTENER_API3 = environ.get("SHORTENER_API3", "c7d26524bec5a47ef34454ed1348511f4124bda6")
+SHORTENER_API3 = environ.get("SHORTENER_API3", "f582950a9e3a93c84d138586e6fab5a25b934e67")
 SHORTENER_WEBSITE3 = environ.get("SHORTENER_WEBSITE3", 'shortxlinks3.com')
-TWO_VERIFY_GAP = int(environ.get('TWO_VERIFY_GAP', "14400"))
-THREE_VERIFY_GAP = int(environ.get('THREE_VERIFY_GAP', "14400"))
+TWO_VERIFY_GAP = int(environ.get('TWO_VERIFY_GAP', "54000"))
+THREE_VERIFY_GAP = int(environ.get('THREE_VERIFY_GAP', "54000"))
 
 # Force Subscribe Settings 
 
-auth_req_channels = environ.get("AUTH_REQ_CHANNELS", "-1003491147826")# requst to join Channel for force sub (make sure bot is admin) only for bot ADMINS  
-auth_channels = environ.get("AUTH_CHANNELS", "-1003016878831 100301687883 -1003096722799")# Channels for force sub (make sure bot is admin)
+auth_req_channels = environ.get("AUTH_REQ_CHANNELS", "-1002628501336")# requst to join Channel for force sub (make sure bot is admin) only for bot ADMINS  
+auth_channels = environ.get("AUTH_CHANNELS", "-1002628501336 -1002414133579 -1002481569627")# Channels for force sub (make sure bot is admin)
 AUTH_REQ_CHANNELS = [int(ch) for ch in auth_req_channels.split() if ch and id_pattern.match(ch)] 
 AUTH_CHANNELS = [int(ch) for ch in auth_channels.split() if ch and id_pattern.match(ch)]
 
 # Channels
 
-SUPPORT_GROUP = int(environ.get('SUPPORT_GROUP', '-1002669266714'))
-request_channel = environ.get('REQUEST_CHANNEL', '-1003491147826')
+SUPPORT_GROUP = int(environ.get('SUPPORT_GROUP', '-1002293630156'))
+request_channel = environ.get('REQUEST_CHANNEL', '-1002871024004')
 REQUEST_CHANNEL = int(request_channel) if request_channel and id_pattern.search(request_channel) else None
 
 # Movie Update Notification Settings/ Auto Index Settings
 
 MOVIE_UPDATE_NOTIFICATION = bool(environ.get('MOVIE_UPDATE_NOTIFICATION', True))  # Notification On (True) / Off (False)
-MOVIE_UPDATE_CHANNEL = int(environ.get('MOVIE_UPDATE_CHANNEL', '-1002518211319'))  # Notification of sent to your channel
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002796911670').split()] # Auto Index Channe
+movie_update_channels = environ.get('MOVIE_UPDATE_CHANNEL', '-1002481569627')
+MOVIE_UPDATE_CHANNEL = [int(ch) for ch in movie_update_channels.split() if ch and id_pattern.search(ch)] # Notification of sent to your channel
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002837138676').split()] # Auto Index Channe
 DELETE_CHANNELS = int(environ.get('DELETE_CHANNELS', '0') or 0)  # Channel to delete file from DB
 IMAGE_FETCH = bool(environ.get('IMAGE_FETCH', True))  # On (True) / Off (False)
 LINK_PREVIEW = bool(environ.get('LINK_PREVIEW', False)) # Shows link preview in notification msg instead of image
@@ -92,7 +93,7 @@ LANDSCAPE_POSTER = bool(environ.get('LANDSCAPE_POSTER', True)) # Shows landscape
 # Bot Settings
 
 AUTO_FILTER = is_enabled('AUTO_FILTER', True)
-FILE_AUTO_DEL_TIMER = int(environ.get('FILE_AUTO_DEL_TIMER', '600'))
+FILE_AUTO_DEL_TIMER = int(environ.get('FILE_AUTO_DEL_TIMER', '300'))
 PORT = int(os.environ.get('PORT', '5000'))
 MAX_BTN = int(environ.get('MAX_BTN', '8'))
 AUTO_DELETE = is_enabled('AUTO_DELETE', True)
@@ -121,7 +122,7 @@ if len(BIN_CHANNEL) == 0:
     exit()
 else:
     BIN_CHANNEL = int(BIN_CHANNEL)
-URL = environ.get("URL", "https://mr-auto-filter-bot-2.onrender.com") #App URL Where you deployed
+URL = environ.get("URL", "https://durgesh-auto-filter-bot.onrender.com") #App URL Where you deployed
 if len(URL) == 0:
     print('error URL is missing, exiting now')
     exit()
