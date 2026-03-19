@@ -17,6 +17,7 @@ def is_enabled(value, default):
 # ============================
 # Bot Information Configuration
 # ============================
+COVERX = is_enabled((environ.get('COVERX', 'False')), False)
 SESSION = environ.get('SESSION', 'dreamxbotz_search')   # Session name for the bot
 API_ID = int(environ.get('API_ID', '')) # API ID from my.telegram.org
 API_HASH = environ.get('API_HASH', '')  # API Hash from my.telegram.org

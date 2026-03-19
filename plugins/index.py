@@ -1,3 +1,4 @@
+from pyrogram.errors import MessageNotModified, FloodWait
 import logging
 import time
 import re
@@ -220,21 +221,28 @@ async def index_files_to_db(lst_msg_id, chat, msg, bot):
                 avg_batch_time = sum(batch_times) / len(batch_times) if batch_times else 1
                 eta = (total_fetch - progress) / BATCH_SIZE * avg_batch_time
                 progress_bar = get_progress_bar(int(percentage))
-                await msg.edit(
-                    f"📊 Indexing Progress 📦 Batch {batch + 1}/{batches}\n"
-                    f"{progress_bar} <code>{percentage:.1f}%</code>\n\n"
-                    f"Total Messages: <code>{total_messages}</code>\n"
-                    f"Total Fetched: <code>{total_fetch}</code>\n"
-                    f"Fetched: <code>{current}</code>\n"
-                    f"Saved: <code>{total_files}</code>\n"
-                    f"Duplicates: <code>{duplicate}</code>\n"
-                    f"Deleted: <code>{deleted}</code>\n"
-                    f"Non-Media: <code>{no_media + unsupported}</code> (Unsupported: <code>{unsupported}</code>)\n"
-                    f"Errors: <code>{errors}</code>\n"
-                    f"⏱️ Elapsed: <code>{get_readable_time(elapsed)}</code>\n"
-                    f"⏰ ETA: <code>{get_readable_time(eta)}</code>",
-                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('Cancel', callback_data='index_cancel')]])
-                )
+                try:
+                    await msg.edit(
+                        f"📊 Indexing Progress 📦 Batch {batch + 1}/{batches}\n"
+                        f"{progress_bar} <code>{percentage:.1f}%</code>\n\n"
+                        f"Total Messages: <code>{total_messages}</code>\n"
+                        f"Total Fetched: <code>{total_fetch}</code>\n"
+                        f"Fetched: <code>{current}</code>\n"
+                        f"Saved: <code>{total_files}</code>\n"
+                        f"Duplicates: <code>{duplicate}</code>\n"
+                        f"Deleted: <code>{deleted}</code>\n"
+                        f"Non-Media: <code>{no_media + unsupported}</code> (Unsupported: <code>{unsupported}</code>)\n"
+                        f"Errors: <code>{errors}</code>\n"
+                        f"⏱️ Elapsed: <code>{get_readable_time(elapsed)}</code>\n"
+                        f"⏰ ETA: <code>{get_readable_time(eta)}</code>",
+                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton('Cancel', callback_data='index_cancel')]])
+                    )
+                except MessageNotModified:
+                    pass
+                except FloodWait as e:
+                    await asyncio.sleep(e.value)
+                except Exception as e:
+                    logger.error(f"Error editing message: {e}")
             elapsed = time.time() - start_time
             await msg.edit(
                 f"✅ Indexing Completed!\n"
