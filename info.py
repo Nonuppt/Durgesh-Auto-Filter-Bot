@@ -73,7 +73,7 @@ STAR_PREMIUM_PLANS = {
 # ============================
 # MongoDB Configuration
 # ============================
-DATABASE_URI = environ.get('DATABASE_URI', "")  # MongoDB URI for the database
+DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://nonukumar162005:nonukumar162005@cluster0.minu107.mongodb.net/mydb?retryWrites=true&w=majority")  # MongoDB URI for the database
 DATABASE_NAME = environ.get('DATABASE_NAME', "mydb") # Database name (default: cluster)
 COLLECTION_NAME = environ.get('COLLECTION_NAME', 'dreamcinezone_files') # Collection name (default: dreamcinezone_files)
 
