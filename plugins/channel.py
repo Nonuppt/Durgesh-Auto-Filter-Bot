@@ -87,6 +87,7 @@ EP_ONLY_RANGE = re.compile(r'\b(?:EP|Episode)0*(\d{1,3})\s*-\s*0*(\d{1,3})\b',re
 MEDIA_FILTER = filters.document | filters.video | filters.audio
 locks = defaultdict(asyncio.Lock)
 pending_updates = {}
+error_tmdb = False
 
 
 def clean_mentions_links(text: str) -> str:
@@ -310,6 +311,7 @@ async def _process_with_lock(bot, filename, caption, media_info, base_name, proc
 async def send_movie_update(bot, base_name):
     max_retries = 3
     base_delay = 5
+    is_photo = False
     for attempt in range(max_retries):
         try:
             movie_doc = await db.movie_updates.find_one({"_id": base_name})
